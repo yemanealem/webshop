@@ -8,6 +8,7 @@ Extract the .zip file anywhere on your computer.
 Open a terminal and run:
 
 cd webshop
+and then
 npm install
 
 3. Start the development server
