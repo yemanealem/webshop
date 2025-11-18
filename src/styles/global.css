@@ -155,6 +155,18 @@ h3 {
   color: #555;
 }
 
+/* Error */
+.error-container {
+  padding: 40px;
+  text-align: center;
+  color: #b00020;
+  background: #ffe6e6;
+  border-radius: 8px;
+  margin: 20px auto;
+  max-width: 500px;
+  border: 1px solid #ffb3b3;
+}
+
 
 
 /* Paragraphs */

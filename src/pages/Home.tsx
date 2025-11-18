@@ -13,25 +13,48 @@ type Product = {
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('https://fakestoreapi.com/products')
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch('https://fakestoreapi.com/products');
+
+        if (!response.ok) {
+          throw new Error("Check your internet is working and try again");
+        }
+
+        const data = await response.json();
         setProducts(data);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unknown error occurred.");
+        }
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Error fetching products:', err);
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchProducts();
   }, []);
 
-if (loading) return <Loading message="Fetching Products..." />;
+  if (loading) return <Loading message="Fetching Products..." />;
+
+  if (error) {
+    return (
+      <div className="error-container">
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container">
-      {/* <h1>Web Shop</h1> */}
       <div className="grid">
         {products.map((p) => (
           <ProductCard

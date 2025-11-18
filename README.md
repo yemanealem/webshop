@@ -4,7 +4,7 @@
 Extract the .zip file anywhere on your computer.
 
 2. Go to the project folder and install dependencies
-
+w
 Open a terminal and run:
 
 cd webshop
