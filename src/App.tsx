@@ -2,7 +2,12 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import About from './pages/About';
 import Checkout from './pages/Checkout';
-import Footer from './components/Footer'; // import Footer
+import Footer from './components/Footer';
+import Dashboard from './pages/Dashboard';
+import AddProductPage from './pages/AddProductPage';
+import ProductsPage from './pages/Products';
+import CustomersPage from './pages/Customers';
+import OrdersPage from './pages/Orders';
 
 function App() {
   return (
@@ -13,9 +18,17 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/checkout" element={<Checkout />} />
+
+           <Route path="/dashboard" element={<Dashboard />}>
+              <Route index element={<ProductsPage />} />
+              <Route path="add-product" element={<AddProductPage />} />
+              <Route path="customers" element={<CustomersPage />} />
+              <Route path="orders" element={<OrdersPage />} />
+            </Route>
+
           </Routes>
         </div>
-        <Footer /> {/* Footer always at the bottom */}
+        <Footer />
       </div>
     </BrowserRouter>
   );

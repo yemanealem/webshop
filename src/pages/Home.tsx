@@ -6,7 +6,6 @@ import RecommendationSection from '../components/RecommendationSection';
 import type { Product } from '../types/Product';
 import Hero from '../components/Hero';
 
-
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
