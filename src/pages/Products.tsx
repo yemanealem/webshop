@@ -7,7 +7,6 @@ import Table from "../components/Table";
 import type { Column } from "../components/Table";
 import type { Product } from "../types/Product";
 
-
 export default function ProductsPage() {
   const navigate = useNavigate();
 
@@ -28,6 +27,9 @@ export default function ProductsPage() {
 
       setProducts(res.data.items || []);
       setTotalPages(res.data.totalPages || 1);
+
+      // 🔹 Ensure skeleton stays visible for at least 500ms
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (err) {
       console.error(err);
     } finally {

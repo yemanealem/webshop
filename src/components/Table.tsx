@@ -40,7 +40,7 @@ export default function Table<T extends { id: number | string }>(props: TablePro
 
   const [searchText, setSearchText] = useState("");
 
-  // 🔥 Debounce search (best practice)
+  // 🔥 Debounce search
   useEffect(() => {
     const delay = setTimeout(() => {
       onSearchChange?.(searchText);
@@ -48,6 +48,9 @@ export default function Table<T extends { id: number | string }>(props: TablePro
 
     return () => clearTimeout(delay);
   }, [searchText]);
+
+  // Skeleton loader rows
+  const skeletonRows = Array.from({ length: pageSize }, (_, i) => i);
 
   return (
     <div className="bg-white p-4 rounded shadow">
@@ -77,24 +80,41 @@ export default function Table<T extends { id: number | string }>(props: TablePro
 
       {/* TABLE */}
       <div className="overflow-x-auto">
-        {loading ? (
-          <div className="p-6 text-center text-gray-500">Loading...</div>
-        ) : (
-          <table className="w-full border-collapse">
-            <thead className="bg-gray-100">
-              <tr>
-                {columns.map((col) => (
-                  <th key={String(col.accessor)} className="border px-4 py-2 text-left">
-                    {col.header}
-                  </th>
-                ))}
-                {actions && <th className="border px-4 py-2">Actions</th>}
-              </tr>
-            </thead>
+        <table className="w-full border-collapse">
+          <thead className="bg-gray-100">
+            <tr>
+              {columns.map((col) => (
+                <th key={String(col.accessor)} className="border px-4 py-2 text-left">
+                  {col.header}
+                </th>
+              ))}
+              {actions && <th className="border px-4 py-2">Actions</th>}
+            </tr>
+          </thead>
 
-            <tbody>
-              {data.length > 0 ? (
-                data.map((item) => (
+          <tbody>
+            {loading
+              ? skeletonRows.map((i) => (
+                  <tr key={i} className="animate-pulse">
+                    {columns.map((col, idx) => (
+                      <td key={idx} className="border px-4 py-2">
+                        {col.accessor === "image" ? (
+                          <div className="bg-gray-200 h-12 w-12 rounded mx-auto"></div>
+                        ) : (
+                          <div className="bg-gray-200 h-4 w-full rounded"></div>
+                        )}
+                      </td>
+                    ))}
+                    {actions && (
+                      <td className="border px- py-2 flex gap-1 justify-center">
+                        <div className="bg-gray-200 h-6 w-12 rounded"></div>
+                        <div className="bg-gray-200 h-6 w-12 rounded"></div>
+                      </td>
+                    )}
+                  </tr>
+                ))
+              : data.length > 0
+              ? data.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50">
                     {columns.map((col) => (
                       <td key={String(col.accessor)} className="border px-4 py-2">
@@ -109,13 +129,10 @@ export default function Table<T extends { id: number | string }>(props: TablePro
                         )}
                       </td>
                     ))}
-
-                    {actions && (
-                      <td className="border px-4 py-2">{actions(item)}</td>
-                    )}
+                    {actions && <td className="border px-3 py-2">{actions(item)}</td>}
                   </tr>
                 ))
-              ) : (
+              : (
                 <tr>
                   <td
                     colSpan={columns.length + (actions ? 1 : 0)}
@@ -125,9 +142,8 @@ export default function Table<T extends { id: number | string }>(props: TablePro
                   </td>
                 </tr>
               )}
-            </tbody>
-          </table>
-        )}
+          </tbody>
+        </table>
       </div>
 
       {/* PAGINATION */}

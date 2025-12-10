@@ -14,7 +14,7 @@ export default function AddProductPage() {
     category: "",
     description: "",
     image: "",
-    rating: { rate: 0, count: 0 },
+    rating: { rate: 3, count: 0 },
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>("");
@@ -88,7 +88,7 @@ export default function AddProductPage() {
       {/* Header */}
       <div className="flex items-center mb-6">
         <button
-          onClick={() => navigate("/dashboard/products")}
+          onClick={() => navigate("/dashboard")}
           className="flex items-center gap-2 text-gray-700 hover:text-gray-900"
         >
           <FaArrowLeft /> Back
