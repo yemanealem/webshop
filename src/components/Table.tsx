@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 
 export type Column<T> = {
   header: string;
@@ -6,109 +6,148 @@ export type Column<T> = {
 };
 
 type TableProps<T> = {
-  data: T[];
+  data?: T[];
   columns: Column<T>[];
   actions?: (item: T) => React.ReactNode;
-  itemsPerPage?: number;
-  headerActions?: React.ReactNode; 
+
+  totalPages?: number;
+  currentPage?: number;
+  pageSize?: number;
+
+  loading?: boolean;
+
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
+  onSearchChange?: (value: string) => void;
+
+  headerActions?: React.ReactNode;
 };
 
-export default function Table<T extends { id: number | string }>({
-  data,
-  columns,
-  actions,
-  itemsPerPage = 5,
-  headerActions,
-}: TableProps<T>) {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
+export default function Table<T extends { id: number | string }>(props: TableProps<T>) {
+  const {
+    data = [],
+    columns,
+    actions,
+    totalPages = 1,
+    currentPage = 1,
+    pageSize = 5,
+    loading = false,
+    onPageChange,
+    onPageSizeChange,
+    onSearchChange,
+    headerActions,
+  } = props;
 
-  // Filter data by search
-  const filteredData = useMemo(() => {
-    if (!search) return data;
-    return data.filter((item) =>
-      columns.some((col) =>
-        String(item[col.accessor]).toLowerCase().includes(search.toLowerCase())
-      )
-    );
-  }, [search, data, columns]);
+  const [searchText, setSearchText] = useState("");
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const currentData = filteredData.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
+  // 🔥 Debounce search (best practice)
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      onSearchChange?.(searchText);
+    }, 400);
+
+    return () => clearTimeout(delay);
+  }, [searchText]);
 
   return (
     <div className="bg-white p-4 rounded shadow">
-      <div className="flex justify-between items-center mb-4 flex-col md:flex-row gap-2 md:gap-0">
+      {/* TOP BAR */}
+      <div className="flex justify-between items-center mb-4 flex-col md:flex-row gap-2">
         <input
           type="text"
           placeholder="Search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
           className="border px-3 py-2 rounded w-full md:w-64"
         />
+
+        <select
+          value={pageSize}
+          onChange={(e) => onPageSizeChange?.(Number(e.target.value))}
+          className="border px-3 py-2 rounded"
+        >
+          <option value={5}>5 per page</option>
+          <option value={10}>10 per page</option>
+          <option value={20}>20 per page</option>
+          <option value={50}>50 per page</option>
+        </select>
+
         {headerActions && <div>{headerActions}</div>}
       </div>
 
-      {/* Table */}
+      {/* TABLE */}
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead className="bg-gray-100">
-            <tr>
-              {columns.map((col) => (
-                <th
-                  key={String(col.accessor)}
-                  className="border px-4 py-2 text-left"
-                >
-                  {col.header}
-                </th>
-              ))}
-              {actions && <th className="border px-4 py-2 text-left">Actions</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {currentData.map((item) => (
-              <tr key={item.id} className="hover:bg-gray-50">
-                {columns.map((col) => (
-                  <td key={String(col.accessor)} className="border px-4 py-2">
-                    {String(item[col.accessor])}
-                  </td>
-                ))}
-                {actions && <td className="border px-4 py-2">{actions(item)}</td>}
-              </tr>
-            ))}
-            {currentData.length === 0 && (
+        {loading ? (
+          <div className="p-6 text-center text-gray-500">Loading...</div>
+        ) : (
+          <table className="w-full border-collapse">
+            <thead className="bg-gray-100">
               <tr>
-                <td
-                  colSpan={columns.length + (actions ? 1 : 0)}
-                  className="text-center py-4"
-                >
-                  No data found
-                </td>
+                {columns.map((col) => (
+                  <th key={String(col.accessor)} className="border px-4 py-2 text-left">
+                    {col.header}
+                  </th>
+                ))}
+                {actions && <th className="border px-4 py-2">Actions</th>}
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {data.length > 0 ? (
+                data.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50">
+                    {columns.map((col) => (
+                      <td key={String(col.accessor)} className="border px-4 py-2">
+                        {col.accessor === "image" && item[col.accessor] ? (
+                          <img
+                            src={String(item[col.accessor])}
+                            alt="product"
+                            className="h-12 w-12 object-cover rounded"
+                          />
+                        ) : (
+                          String(item[col.accessor])
+                        )}
+                      </td>
+                    ))}
+
+                    {actions && (
+                      <td className="border px-4 py-2">{actions(item)}</td>
+                    )}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={columns.length + (actions ? 1 : 0)}
+                    className="text-center py-4 text-gray-500"
+                  >
+                    No data found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
 
-      {/* Pagination */}
+      {/* PAGINATION */}
       <div className="flex justify-between items-center mt-4">
         <button
-          onClick={() => setPage((p) => Math.max(p - 1, 1))}
-          disabled={page === 1}
-          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          onClick={() => onPageChange?.(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
         >
           Prev
         </button>
+
         <span>
-          Page {page} / {totalPages || 1}
+          Page {currentPage} / {totalPages}
         </span>
+
         <button
-          onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-          disabled={page === totalPages || totalPages === 0}
-          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+          onClick={() => onPageChange?.(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
         >
           Next
         </button>
