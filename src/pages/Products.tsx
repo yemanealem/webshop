@@ -3,6 +3,10 @@ import type { Column } from "../components/Table";
 import Table from "../components/Table";
 import type { Product } from "../types/Product";
 import { useNavigate } from "react-router-dom";
+import { FaPlus } from "react-icons/fa";
+import { FaBoxOpen } from "react-icons/fa";
+
+
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -24,18 +28,21 @@ export default function ProductsPage() {
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold mb-4">Products</h1>
 
+      <h1 className="flex items-center gap-3 text-2xl md:text-2xl font-extrabold mb-6 text-green-800">
+        <FaBoxOpen className="text-emerald-600" />
+        Products
+      </h1>
       <Table<Product>
         data={products}
         columns={columns}
         headerActions={
           <button
-            className="flex items-center gap-2 bg-emerald-700 text-white px-4 py-2 rounded hover:bg-emerald-600"
-            onClick={() => navigate("/dashboard/add-product")}
-          >
-            <span className="text-xl">+</span> Add Product
-          </button>
+              onClick={() => navigate("/dashboard/add-product")}
+              className="flex items-center gap-2 bg-emerald-700 text-white px-5 py-2 rounded-full shadow hover:bg-emerald-600 hover:scale-105 transition-transform duration-200"
+            >
+              <FaPlus className="text-sm" /> Add Product
+            </button>
         }
         actions={(product) => (
           <div className="flex gap-2">

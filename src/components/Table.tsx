@@ -10,7 +10,7 @@ type TableProps<T> = {
   columns: Column<T>[];
   actions?: (item: T) => React.ReactNode;
   itemsPerPage?: number;
-  headerActions?: React.ReactNode; // For Add button or other actions
+  headerActions?: React.ReactNode; 
 };
 
 export default function Table<T extends { id: number | string }>({
@@ -41,7 +41,6 @@ export default function Table<T extends { id: number | string }>({
 
   return (
     <div className="bg-white p-4 rounded shadow">
-      {/* Header: Search left, headerActions right */}
       <div className="flex justify-between items-center mb-4 flex-col md:flex-row gap-2 md:gap-0">
         <input
           type="text"
