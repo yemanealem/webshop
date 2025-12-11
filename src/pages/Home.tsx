@@ -7,6 +7,8 @@ import type { Product } from "../types/Product";
 import Hero from "../components/Hero";
 
 export default function Home() {
+  const CART_KEY = "cart_items";
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadMoreLoading, setLoadMoreLoading] = useState(false);
@@ -20,8 +22,20 @@ export default function Home() {
   const pageSize = 8;
   const [totalPages, setTotalPages] = useState(1);
 
-const searchTimeout = useRef<number | null>(null);
+  const searchTimeout = useRef<number | null>(null);
 
+  // Load cart from localStorage
+  useEffect(() => {
+    const storedCart = localStorage.getItem(CART_KEY);
+    if (storedCart) setCartItems(JSON.parse(storedCart));
+  }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(CART_KEY, JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  // Fetch products from API
   const fetchProducts = async (currentPage: number, query = "", category: string | null = null) => {
     try {
       if (currentPage === 1) setLoading(true);
@@ -47,7 +61,7 @@ const searchTimeout = useRef<number | null>(null);
       setTimeout(() => {
         setLoading(false);
         setLoadMoreLoading(false);
-      }, 300); 
+      }, 300);
     }
   };
 
@@ -55,14 +69,24 @@ const searchTimeout = useRef<number | null>(null);
     fetchProducts(1);
   }, []);
 
-  if (searchTimeout.current) {
-  clearTimeout(searchTimeout.current);
-}
+  // Debounced search
+  useEffect(() => {
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    searchTimeout.current = window.setTimeout(() => {
+      setPage(1);
+      fetchProducts(1, searchQuery, selectedCategory);
+    }, 500);
+    return () => {
+      if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    };
+  }, [searchQuery, selectedCategory]);
+
   const categories = useMemo(
     () => Array.from(new Set(products.map((p) => p.category))),
     [products]
   );
 
+  // Cart operations
   const addToCart = (product: Product, qty = 1) => {
     setCartItems((prev) => {
       const existing = prev.find((ci) => ci.product.id === product.id);
@@ -75,23 +99,17 @@ const searchTimeout = useRef<number | null>(null);
     });
   };
 
+  const updateCartQty = (productId: number, qty: number) => {
+    setCartItems((prev) =>
+      prev.map((ci) => (ci.product.id === productId ? { ...ci, qty } : ci))
+    );
+  };
+
   const removeFromCart = (productId: number) => {
     setCartItems((prev) => prev.filter((ci) => ci.product.id !== productId));
   };
 
-  // Debounced search
-  useEffect(() => {
-    if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    searchTimeout.current = setTimeout(() => {
-      setPage(1);
-      fetchProducts(1, searchQuery, selectedCategory);
-    }, 500);
-    return () => {
-      if (searchTimeout.current) clearTimeout(searchTimeout.current);
-    };
-  }, [searchQuery, selectedCategory]);
-
-  const filtered = useMemo(
+  const filteredProducts = useMemo(
     () =>
       products.filter((p) => {
         const q = searchQuery.trim().toLowerCase();
@@ -122,6 +140,7 @@ const searchTimeout = useRef<number | null>(null);
         }}
         cartItems={cartItems}
         onRemoveFromCart={removeFromCart}
+        updateCartQty={updateCartQty}
       />
 
       <Hero />
@@ -133,15 +152,14 @@ const searchTimeout = useRef<number | null>(null);
 
         {loading && page === 1 ? (
           <Loading message="Fetching Products..." />
-        ) : filtered.length > 0 ? (
+        ) : filteredProducts.length > 0 ? (
           <>
             <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {filtered.map((p) => (
+              {filteredProducts.map((p) => (
                 <ProductCard key={p.id} product={p} addToCart={addToCart} />
               ))}
             </div>
 
-            {/* Load More Button */}
             {page < totalPages && (
               <div className="mt-6 flex justify-center">
                 <button
@@ -153,33 +171,7 @@ const searchTimeout = useRef<number | null>(null);
                   className="flex items-center gap-2 bg-emerald-400 text-white px-6 py-2 rounded-full shadow-lg hover:bg-emerald-800 transition-all duration-200 transform hover:scale-105"
                   disabled={loadMoreLoading}
                 >
-                  {loadMoreLoading ? (
-                    <>
-                      <svg
-                        className="animate-spin h-5 w-5 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v8H4z"
-                        ></path>
-                      </svg>
-                      Loading...
-                    </>
-                  ) : (
-                    "Load More"
-                  )}
+                  {loadMoreLoading ? "Loading..." : "Load More"}
                 </button>
               </div>
             )}

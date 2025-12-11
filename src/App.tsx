@@ -13,21 +13,23 @@ function App() {
   return (
     <BrowserRouter>
       <div className="flex flex-col min-h-screen">
-        <div className="flex-grow">
+        {/* Main content grows to fill available space */}
+        <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/checkout" element={<Checkout />} />
 
-           <Route path="/dashboard" element={<Dashboard />}>
+            <Route path="/dashboard" element={<Dashboard />}>
               <Route index element={<ProductsPage />} />
               <Route path="add-product" element={<AddProductPage />} />
               <Route path="customers" element={<CustomersPage />} />
               <Route path="orders" element={<OrdersPage />} />
             </Route>
-
           </Routes>
-        </div>
+        </main>
+
+        {/* Footer stays at the bottom */}
         <Footer />
       </div>
     </BrowserRouter>
