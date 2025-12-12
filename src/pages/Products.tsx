@@ -1,11 +1,13 @@
-import axios from "axios";
-import { PRODUCTS_API } from "../constants";
-import { useNavigate } from "react-router-dom";
-import { FaPlus, FaBoxOpen, FaTrash, FaEdit } from "react-icons/fa";
 import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { PRODUCTS_API } from "../constants";
+import { FaPlus, FaBoxOpen, FaTrash, FaEdit } from "react-icons/fa";
 import Table from "../components/Table";
 import type { Column } from "../components/Table";
 import type { Product } from "../types/Product";
+import Modal from "../components/Modal";
+import Toast from "../components/Toast";
 
 export default function ProductsPage() {
   const navigate = useNavigate();
@@ -17,19 +19,20 @@ export default function ProductsPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [toastMessage, setToastMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
+
+  // Load products
   const loadProducts = async () => {
     try {
       setLoading(true);
-
       const res = await axios.get(PRODUCTS_API, {
         params: { page, pageSize, search },
       });
-
       setProducts(res.data.items || []);
       setTotalPages(res.data.totalPages || 1);
-
-      // 🔹 Ensure skeleton stays visible for at least 500ms
-      await new Promise((resolve) => setTimeout(resolve, 1000));
     } catch (err) {
       console.error(err);
     } finally {
@@ -41,12 +44,33 @@ export default function ProductsPage() {
     loadProducts();
   }, [page, pageSize, search]);
 
-  const deleteProduct = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
-
-    await axios.delete(`${PRODUCTS_API}/${id}`);
-    loadProducts();
+  // Delete handlers
+  const handleDeleteClick = (product: Product) => {
+    setProductToDelete(product);
+    setDeleteModalOpen(true);
   };
+
+  const confirmDelete = async () => {
+    if (!productToDelete) return;
+    try {
+      await axios.delete(`${PRODUCTS_API}/${productToDelete.id}`);
+      setDeleteModalOpen(false);
+      setProductToDelete(null);
+      loadProducts();
+      setToastMessage("Deleted successfully!");
+      setShowToast(true); // trigger toast
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => setShowToast(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
 
   const columns: Column<Product>[] = [
     { header: "ID", accessor: "id" },
@@ -57,7 +81,7 @@ export default function ProductsPage() {
   ];
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
+    <div className="p-6 bg-gray-100 min-h-screen relative">
       <h1 className="flex items-center gap-3 text-2xl font-extrabold mb-6 text-green-800">
         <FaBoxOpen className="text-emerald-600" />
         Products
@@ -89,7 +113,7 @@ export default function ProductsPage() {
             </button>
 
             <button
-              onClick={() => deleteProduct(item.id)}
+              onClick={() => handleDeleteClick(item)}
               className="text-red-600 hover:underline flex items-center gap-1"
             >
               <FaTrash /> Delete
@@ -105,6 +129,18 @@ export default function ProductsPage() {
           </button>
         }
       />
+
+  
+      <Modal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Product"
+        message={`Are you sure you want to delete "${productToDelete?.title}"?`}
+      />
+
+   
+      <Toast message={toastMessage} show={showToast} />
     </div>
   );
 }

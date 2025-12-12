@@ -40,11 +40,10 @@ export default function Navbar({
     <header className="bg-white shadow sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo and Categories */}
           <div className="flex items-center gap-6">
             <div className="text-xl font-bold text-gray-800">MyWebShop</div>
 
-            {/* Categories dropdown */}
+        
             <div className="relative">
               <button
                 onClick={() => setOpenCat(v => !v)}

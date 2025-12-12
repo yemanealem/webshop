@@ -8,6 +8,10 @@ import AddProductPage from './pages/AddProductPage';
 import ProductsPage from './pages/Products';
 import CustomersPage from './pages/Customers';
 import OrdersPage from './pages/Orders';
+import OrderDetailPage from './pages/OrderDetailPage';
+import EditProductPage from './pages/EditProductPage';
+
+import "./styles/global.css"; 
 
 function App() {
   return (
@@ -23,8 +27,14 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />}>
               <Route index element={<ProductsPage />} />
               <Route path="add-product" element={<AddProductPage />} />
+              <Route path="edit-product/:id" element={<EditProductPage />} />
+
               <Route path="customers" element={<CustomersPage />} />
-              <Route path="orders" element={<OrdersPage />} />
+               <Route path="orders" element={<OrdersPage />} />
+               <Route path="order-detail/:id" element={<OrderDetailPage />} />
+               
+
+
             </Route>
           </Routes>
         </main>

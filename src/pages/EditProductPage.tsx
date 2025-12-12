@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import type { ProductInput } from "../types/ProductInput";
 import { FaArrowLeft, FaUpload } from "react-icons/fa";
 import LoadingButton from "../components/LoadingButton";
@@ -7,15 +7,17 @@ import axios from "axios";
 import { PRODUCTS_API } from "../constants";
 import Toast from "../components/Toast";
 
-export default function AddProductPage() {
+export default function EditProductPage() {
   const navigate = useNavigate();
-  const [newProduct, setNewProduct] = useState<ProductInput>({
+  const { id } = useParams<{ id: string }>();
+
+  const [product, setProduct] = useState<ProductInput>({
     title: "",
     price: 0,
     category: "",
     description: "",
     image: "",
-    rating: { rate: 3, count: 0 },
+    rating: { rate: 0, count: 0 },
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>("");
@@ -23,13 +25,28 @@ export default function AddProductPage() {
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
 
-  const categories = ["Electronics","Jowlery", "Clothing", "Books", "Accessories", "Shoes"];
+  const categories = ["Electronics", "Clothing", "Books", "Accessories", "Shoes"];
+
+  const loadProduct = async () => {
+    try {
+      const res = await axios.get(`${PRODUCTS_API}/${id}`);
+      setProduct(res.data);
+      setPreview(res.data.image);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load product");
+    }
+  };
+
+  useEffect(() => {
+    loadProduct();
+  }, [id]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setNewProduct(prev => ({ ...prev, [name]: value }));
+    setProduct(prev => ({ ...prev, [name]: value }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,45 +57,29 @@ export default function AddProductPage() {
     }
   };
 
-  const clearForm = () => {
-    setNewProduct({
-      title: "",
-      price: 0,
-      category: "",
-      description: "",
-      image: "",
-      rating: { rate: 0, count: 0 },
-    });
-    setImageFile(null);
-    setPreview("");
-  };
-
   const handleSubmit = async () => {
-    if (!imageFile) {
-      alert("Please select an image!");
-      return;
-    }
-
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append("Title", newProduct.title);
-      formData.append("Price", newProduct.price.toString());
-      formData.append("Category", newProduct.category);
-      formData.append("Description", newProduct.description);
-      formData.append("Image", imageFile);
+      formData.append("Title", product.title);
+      formData.append("Price", product.price.toString());
+      formData.append("Category", product.category);
+      formData.append("Description", product.description);
 
-      const response = await axios.post(PRODUCTS_API, formData, {
+      if (imageFile) {
+        formData.append("Image", imageFile);
+      }
+
+      await axios.put(`${PRODUCTS_API}/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      console.log("Product created:", response.data);
-      setToastMessage("Product added successfully!");
+    
+      setToastMessage("Product updated successfully!");
       setShowToast(true);
-      clearForm();
     } catch (err) {
       console.error(err);
-      alert("Failed to add product. Please try again.");
+      alert("Failed to update product");
     } finally {
       setLoading(false);
     }
@@ -101,11 +102,11 @@ export default function AddProductPage() {
           <FaArrowLeft /> Back
         </button>
         <h1 className="text-3xl md:text-2xl font-semibold text-emerald-700 ml-4">
-          Add <span className="text-emerald-700">New Product</span>
+          Edit Product
         </h1>
       </div>
 
-  
+ 
       <Toast message={toastMessage} show={showToast} />
 
       <div className="bg-white p-6 rounded shadow max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -114,7 +115,7 @@ export default function AddProductPage() {
           <input
             type="text"
             name="title"
-            value={newProduct.title}
+            value={product.title}
             onChange={handleChange}
             className="border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-emerald-400"
           />
@@ -125,7 +126,7 @@ export default function AddProductPage() {
           <input
             type="number"
             name="price"
-            value={newProduct.price}
+            value={product.price}
             onChange={handleChange}
             className="border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-emerald-400"
           />
@@ -135,7 +136,7 @@ export default function AddProductPage() {
           <label className="mb-1 font-semibold text-gray-700">Category</label>
           <select
             name="category"
-            value={newProduct.category}
+            value={product.category}
             onChange={handleChange}
             className="border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-white"
           >
@@ -164,7 +165,7 @@ export default function AddProductPage() {
           <label className="mb-1 font-semibold text-gray-700">Description</label>
           <textarea
             name="description"
-            value={newProduct.description}
+            value={product.description}
             onChange={handleChange}
             className="border px-3 py-2 rounded h-24 focus:outline-none focus:ring-2 focus:ring-emerald-400"
           />
@@ -177,7 +178,7 @@ export default function AddProductPage() {
           onClick={handleSubmit}
           className="bg-emerald-700 hover:bg-emerald-600 w-full text-lg"
         >
-          Save Product
+          Update Product
         </LoadingButton>
       </div>
     </div>

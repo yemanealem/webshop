@@ -40,7 +40,6 @@ export default function Table<T extends { id: number | string }>(props: TablePro
 
   const [searchText, setSearchText] = useState("");
 
-  // 🔥 Debounce search
   useEffect(() => {
     const delay = setTimeout(() => {
       onSearchChange?.(searchText);
@@ -49,12 +48,11 @@ export default function Table<T extends { id: number | string }>(props: TablePro
     return () => clearTimeout(delay);
   }, [searchText]);
 
-  // Skeleton loader rows
   const skeletonRows = Array.from({ length: pageSize }, (_, i) => i);
 
   return (
     <div className="bg-white p-4 rounded shadow">
-      {/* TOP BAR */}
+    
       <div className="flex justify-between items-center mb-4 flex-col md:flex-row gap-2">
         <input
           type="text"
@@ -78,7 +76,7 @@ export default function Table<T extends { id: number | string }>(props: TablePro
         {headerActions && <div>{headerActions}</div>}
       </div>
 
-      {/* TABLE */}
+    
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead className="bg-gray-100">
@@ -146,7 +144,7 @@ export default function Table<T extends { id: number | string }>(props: TablePro
         </table>
       </div>
 
-      {/* PAGINATION */}
+    
       <div className="flex justify-between items-center mt-4">
         <button
           onClick={() => onPageChange?.(currentPage - 1)}

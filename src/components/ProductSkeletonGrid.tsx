@@ -1,7 +1,7 @@
 import React from "react";
 
 type Props = {
-  count?: number; // number of skeletons
+  count?: number; 
 };
 
 export default function ProductSkeletonGrid({ count = 4 }: Props) {

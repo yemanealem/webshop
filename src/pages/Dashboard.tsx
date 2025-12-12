@@ -20,7 +20,6 @@ export default function Dashboard() {
       <Sidebar />
 
       <main className="flex-1">
-        {/* Header with background */}
         <div className="bg-emerald-700 p-4 md:p-6 ml-0.5 flex justify-end items-center shadow-md">
           <button className="relative p-2 rounded-full bg-white hover:bg-gray-100 transition">
             <FaBell className="text-gray-700 text-xl" />
@@ -32,7 +31,7 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Content */}
+      
         <div className="p-6">
           <Outlet />
         </div>

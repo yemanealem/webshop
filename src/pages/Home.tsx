@@ -24,18 +24,15 @@ export default function Home() {
 
   const searchTimeout = useRef<number | null>(null);
 
-  // Load cart from localStorage
   useEffect(() => {
     const storedCart = localStorage.getItem(CART_KEY);
     if (storedCart) setCartItems(JSON.parse(storedCart));
   }, []);
 
-  // Save cart to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem(CART_KEY, JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // Fetch products from API
   const fetchProducts = async (currentPage: number, query = "", category: string | null = null) => {
     try {
       if (currentPage === 1) setLoading(true);
@@ -69,7 +66,6 @@ export default function Home() {
     fetchProducts(1);
   }, []);
 
-  // Debounced search
   useEffect(() => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
     searchTimeout.current = window.setTimeout(() => {
@@ -86,7 +82,6 @@ export default function Home() {
     [products]
   );
 
-  // Cart operations
   const addToCart = (product: Product, qty = 1) => {
     setCartItems((prev) => {
       const existing = prev.find((ci) => ci.product.id === product.id);
