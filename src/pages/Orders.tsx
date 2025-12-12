@@ -42,7 +42,9 @@ export default function OrdersPage() {
       }));
 
       setOrders(mappedOrders);
-      setTotalPages(Math.ceil(mappedOrders.length / pageSize)); // or fetch from API if available
+      setTotalPages(Math.ceil(mappedOrders.length / pageSize)); 
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
     } catch (err) {
       console.error(err);
       setToastMessage("Failed to load orders!");

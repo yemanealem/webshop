@@ -21,12 +21,13 @@ export default function CustomersPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
 
-  // Load customers
   const loadCustomers = async () => {
     try {
       setLoading(true);
       const res = await axios.get<Customer[]>(CUSTOMERS_API);
       setCustomers(res.data);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
     } catch (err) {
       console.error(err);
       setToastMessage("Failed to load customers!");
@@ -40,7 +41,6 @@ export default function CustomersPage() {
     loadCustomers();
   }, []);
 
-  // Delete handlers
   const handleDeleteClick = (customer: Customer) => {
     setCustomerToDelete(customer);
     setDeleteModalOpen(true);
@@ -60,7 +60,6 @@ export default function CustomersPage() {
     }
   };
 
-  // Auto-hide toast
   useEffect(() => {
     if (showToast) {
       const timer = setTimeout(() => setShowToast(false), 3000);
@@ -101,7 +100,6 @@ export default function CustomersPage() {
         )}
       />
 
-      {/* Delete confirmation modal */}
       <Modal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
@@ -110,7 +108,6 @@ export default function CustomersPage() {
         message={`Are you sure you want to delete "${customerToDelete?.name}"?`}
       />
 
-      {/* Toast */}
       <Toast message={toastMessage} show={showToast} />
     </div>
   );

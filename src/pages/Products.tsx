@@ -24,7 +24,7 @@ export default function ProductsPage() {
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
 
-  // Load products
+
   const loadProducts = async () => {
     try {
       setLoading(true);
@@ -33,6 +33,9 @@ export default function ProductsPage() {
       });
       setProducts(res.data.items || []);
       setTotalPages(res.data.totalPages || 1);
+      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
     } catch (err) {
       console.error(err);
     } finally {
@@ -44,7 +47,7 @@ export default function ProductsPage() {
     loadProducts();
   }, [page, pageSize, search]);
 
-  // Delete handlers
+
   const handleDeleteClick = (product: Product) => {
     setProductToDelete(product);
     setDeleteModalOpen(true);
@@ -58,13 +61,12 @@ export default function ProductsPage() {
       setProductToDelete(null);
       loadProducts();
       setToastMessage("Deleted successfully!");
-      setShowToast(true); // trigger toast
+      setShowToast(true); 
     } catch (err) {
       console.error(err);
     }
   };
 
-  // Auto-hide toast after 3 seconds
   useEffect(() => {
     if (showToast) {
       const timer = setTimeout(() => setShowToast(false), 3000);
